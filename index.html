@@ -376,7 +376,7 @@ function App() {
           </div>
           <label style={{display: 'flex', alignItems: 'flex-start', gap: 11, cursor: 'pointer', marginBottom: 18, fontSize: 13, color: M, lineHeight: 1.6}}>
             <input type="checkbox" checked={consent} onChange={function () { setConsent(!consent); }} style={{width: 20, height: 20, marginTop: 1, accentColor: N, flexShrink: 0}} />
-            <span>I agree to Pinpoint Finance using my details to look at my mortgage options and contact me about them.</span>
+            <span>I agree to Pinpoint Finance using my details to look at my mortgage options and contact me about them, as set out in our <a href="https://pinpoint.finance/privacy-policy/" target="_blank" rel="noopener" style={{color: N, textDecoration: 'underline'}}>privacy policy</a>.</span>
           </label>
           <button disabled={!canStart} onClick={startChat} style={{width: '100%', padding: 15, borderRadius: 12, border: 'none', background: canStart ? T : '#e2e8f0', color: canStart ? N : '#999', fontSize: 15, fontWeight: 900, cursor: canStart ? 'pointer' : 'default', fontFamily: 'Lato,sans-serif'}}>
             {canStart ? 'Start my free check →' : (needsType && !mtype ? 'Choose home or let property above' : 'Tick the box above to start')}
