@@ -209,7 +209,7 @@ function parseReply(text) {
     out.options = o.split('|').map(function (x) { return x.trim(); }).filter(Boolean).slice(0, 8); return '';
   });
   out.text = out.text.replace(/\[\[progress:\s*(\d+)\s*\]\]/i, function (m, n) { out.progress = Math.max(0, Math.min(100, +n)); return ''; });
-  var ci = out.text.indexOf('[[complete:'); if (ci !== -1) { var cj = out.text.lastIndexOf('}'); try { out.complete = JSON.parse(out.text.substring(out.text.indexOf('{', ci), cj + 1)); } catch (e) { out.complete = {complete: true, data: {}}; } out.text = out.text.substring(0, ci); }
+  var ci = out.text.indexOf('[[complete:'); if (ci !== -1) { var cj = out.text.lastIndexOf('}'); var raw = out.text.substring(out.text.indexOf('{', ci), cj + 1); try { out.complete = JSON.parse(raw.replace(/[\r\n]+/g, ' ')); } catch (e) { var dd = {}; raw.replace(/"(\w+)"\s*:\s*"([^"]*)"/g, function (m, k, v) { if (k !== 'complete' && k !== 'data') dd[k] = v; return m; }); out.complete = {complete: true, data: dd}; } out.text = out.text.substring(0, ci); }
   out.text = out.text.replace(/\[\[lead:\s*(\{[\s\S]*?\})\s*\]\]/i, function (m, j) { try { out.lead = JSON.parse(j); } catch (e) {} return ''; });
   out.text = out.text.replace(/[–—]/g, ',').trim();
   return out;
@@ -237,7 +237,7 @@ function App() {
   var _t = useState(CTX.type), mtype = _t[0], setMtype = _t[1];
   var _o = useState([]), options = _o[0], setOptions = _o[1];
   var _p = useState(0), progress = _p[0], setProgress = _p[1];
-  var endRef = useRef(null), inputRef = useRef(null), sysRef = useRef('');
+  var endRef = useRef(null), inputRef = useRef(null), sysRef = useRef(''), leadRef = useRef({});
 
   useEffect(function () { if (endRef.current) endRef.current.scrollIntoView({behavior: 'smooth', block: 'nearest'}); }, [msgs, busy, options]);
 
@@ -264,8 +264,12 @@ function App() {
       } catch (e) {}
     }
     var p = parseReply(reply);
+    if (p.lead) leadRef.current = Object.assign({}, leadRef.current, p.lead);
     if (p.complete) {
-      var cd = p.complete.data || p.complete;
+      var got = p.complete.data || p.complete, cd = Object.assign({}, leadRef.current);
+      Object.keys(got).forEach(function (k) { if (got[k] !== '' && got[k] !== null && got[k] !== undefined && k !== 'complete') cd[k] = got[k]; });
+      var all = baseMsgs.concat([{role: 'assistant', content: p.text}]);
+      cd.transcript = all.map(function (m) { return (m.role === 'user' ? 'Client: ' : 'Pinpoint: ') + m.content; }).join('\n').slice(0, 8000);
       cd.mortgageType = cd.mortgageType || mtype;
       if (L && !cd.lender) cd.lender = L.name;
       window.ppSend('complete', cd);
