@@ -110,6 +110,7 @@ window.ppBuildSystem = function (mtype) {
   }
   s.push("");
   s.push("QUICK REPLIES: when the answer is a choice, end your message with one line: [[options: A | B | C]] (max 8 short options). The page shows them as buttons. The client can still type.");
+  s.push("FIELD: every message that asks the client a question must also end with [[field: KEY]] naming what the question collects. KEY is one of: firstName, lastName, phone, email, address, dealExpiry, mortgageType, lender, balance, propertyValue, path, jointNames, jointName, jointPhone, jointEmail, plannedChanges, accountNumber, dateOfBirth, lenderDetail, productType, dealTerm, addFeeToLoan, maxPayment, rentalIncome, propertyType, btlAddress, ownership, income, commitments, term, other. Use the same KEY when you re-ask.");
   s.push("PROGRESS: end EVERY message with [[progress: N]] where N is 0 to 100, your estimate of how far through the fact find we are.");
   s.push("");
   s.push("STAGE 1, in this exact order, one question at a time:");
@@ -167,6 +168,28 @@ window.ppBuildSystem = function (mtype) {
   return s.join('\n');
 };
 
+// Summary fields, in the order they are shown to the client and sent to Pinpoint.
+window.PP_FIELDS = [['lender','Lender'],['mortgageType','Mortgage'],['dealExpiry','Deal ends'],['balance','Balance'],['propertyValue','Property value'],
+  ['jointNames','Joint names'],['jointName','Joint with'],['jointPhone','Joint phone'],['jointEmail','Joint email'],['plannedChanges','Planned changes'],
+  ['accountNumber','Account number'],['dateOfBirth','Date of birth'],['lenderDetail','Other lender details'],['path','Route'],['productType','Fixed or tracker'],
+  ['dealTerm','Deal length'],['addFeeToLoan','Add fee to loan'],['maxPayment','Monthly budget'],['rentalIncome','Monthly rent'],['propertyType','Single let or HMO'],
+  ['btlAddress','Let property address'],['ownership','Held personally or Ltd'],['income','Household income'],['commitments','Credit commitments'],['term','Years left on mortgage']];
+window.ppSummaryRows = function (d) {
+  d = d || {};
+  var money = function (v) { var n = String(v).replace(/[£,\s]/g, ''); return /^\d+(\.\d+)?$/.test(n) ? '£' + Number(n).toLocaleString('en-GB') : v; };
+  var nice = function (k, v) {
+    if (k === 'mortgageType') return v === 'buy-to-let' ? 'Buy to let' : (v === 'residential' ? 'Residential' : v);
+    if (k === 'path') return v === 'PT_ONLY' ? 'Product transfer' : (v === 'REMORTGAGE' ? 'Full market review requested' : v);
+    if (['balance','propertyValue','maxPayment','rentalIncome','income'].indexOf(k) !== -1) return money(v);
+    if (k === 'addFeeToLoan' && /^yes/i.test(v)) return 'Yes (interest warning given)';
+    return v;
+  };
+  var rows = [['Name', [d.firstName, d.lastName].filter(Boolean).join(' ')], ['Phone', d.phone], ['Email', d.email],
+    ['Address', d.address && d.postcode && String(d.address).toUpperCase().indexOf(String(d.postcode).toUpperCase()) === -1 ? d.address + ', ' + d.postcode : (d.address || d.postcode)]];
+  window.PP_FIELDS.forEach(function (f) { if (d[f[0]] !== undefined && d[f[0]] !== null && String(d[f[0]]).trim() !== '') rows.push([f[1], nice(f[0], String(d[f[0]]).trim())]); });
+  return rows.filter(function (r) { return r[1] && String(r[1]).trim(); });
+};
+
 // Send a lead to the CRM webhook, if one is set.
 window.ppSend = function (event, data) {
   if (!window.PP_WEBHOOK) return;
@@ -182,10 +205,11 @@ window.ppSend = function (event, data) {
     _url: 'https://pinpoint.finance' + (ctx.slug ? '/' + ctx.slug + '/' : '/residential-mortgages/free-product-transfer-service/'),
     _post_title: label + (event === 'lead' ? ', contact details' : ', completed')
   };
-  Object.keys(d).forEach(function (k) {
-    if (['firstName', 'lastName', 'email', 'phone'].indexOf(k) === -1 && d[k] !== '' && d[k] !== null && d[k] !== undefined) f[k] = String(d[k]);
-  });
-  if (!f.lender && lender) f.lender = lender;
+  f.lender = lender;
+  if (d.dealExpiry) f.dealExpiry = d.dealExpiry;
+  if (d.mortgageType) f.mortgageType = d.mortgageType;
+  f.summary = window.ppSummaryRows(d).map(function (r) { return r[0] + ': ' + r[1]; }).join('\n');
+  if (d.transcript) f.transcript = d.transcript;
   try {
     fetch(window.PP_WEBHOOK + '?form=pt-chat-' + event, { method: 'POST', mode: 'no-cors', body: new URLSearchParams(f) });
   } catch (e) {}
@@ -204,10 +228,11 @@ function Logo(p) {
 
 // Pull [[options: ...]], [[progress: N]] and [[lead: {...}]] out of a reply.
 function parseReply(text) {
-  var out = {text: text, options: [], progress: null, lead: null, complete: null};
+  var out = {text: text, options: [], progress: null, lead: null, complete: null, field: null};
   out.text = out.text.replace(/\[\[options:\s*([^\]]*)\]\]/i, function (m, o) {
     out.options = o.split('|').map(function (x) { return x.trim(); }).filter(Boolean).slice(0, 8); return '';
   });
+  out.text = out.text.replace(/\[\[field:\s*([A-Za-z]+)\s*\]\]/i, function (m, k) { out.field = k; return ''; });
   out.text = out.text.replace(/\[\[progress:\s*(\d+)\s*\]\]/i, function (m, n) { out.progress = Math.max(0, Math.min(100, +n)); return ''; });
   var ci = out.text.indexOf('[[complete:'); if (ci !== -1) { var cj = out.text.lastIndexOf('}'); var raw = out.text.substring(out.text.indexOf('{', ci), cj + 1); try { out.complete = JSON.parse(raw.replace(/[\r\n]+/g, ' ')); } catch (e) { var dd = {}; raw.replace(/"(\w+)"\s*:\s*"([^"]*)"/g, function (m, k, v) { if (k !== 'complete' && k !== 'data') dd[k] = v; return m; }); out.complete = {complete: true, data: dd}; } out.text = out.text.substring(0, ci); }
   out.text = out.text.replace(/\[\[lead:\s*(\{[\s\S]*?\})\s*\]\]/i, function (m, j) { try { out.lead = JSON.parse(j); } catch (e) {} return ''; });
@@ -237,7 +262,7 @@ function App() {
   var _t = useState(CTX.type), mtype = _t[0], setMtype = _t[1];
   var _o = useState([]), options = _o[0], setOptions = _o[1];
   var _p = useState(0), progress = _p[0], setProgress = _p[1];
-  var endRef = useRef(null), inputRef = useRef(null), sysRef = useRef(''), leadRef = useRef({});
+  var endRef = useRef(null), inputRef = useRef(null), sysRef = useRef(''), leadRef = useRef({}), fieldRef = useRef(null), answersRef = useRef({});
 
   useEffect(function () { if (endRef.current) endRef.current.scrollIntoView({behavior: 'smooth', block: 'nearest'}); }, [msgs, busy, options]);
 
@@ -268,6 +293,7 @@ function App() {
     if (p.complete) {
       var got = p.complete.data || p.complete, cd = Object.assign({}, leadRef.current);
       Object.keys(got).forEach(function (k) { if (got[k] !== '' && got[k] !== null && got[k] !== undefined && k !== 'complete') cd[k] = got[k]; });
+      Object.keys(answersRef.current).forEach(function (k) { cd[k] = answersRef.current[k]; });
       var all = baseMsgs.concat([{role: 'assistant', content: p.text}]);
       cd.transcript = all.map(function (m) { return (m.role === 'user' ? 'Client: ' : 'Pinpoint: ') + m.content; }).join('\n').slice(0, 8000);
       cd.mortgageType = cd.mortgageType || mtype;
@@ -279,7 +305,8 @@ function App() {
       setTimeout(function () { setResult(cd); setStage('done'); }, 3500);
       return;
     }
-    if (p.lead) window.ppSend('lead', Object.assign({mortgageType: mtype || '', lender: L ? L.name : ''}, p.lead));
+    fieldRef.current = p.field;
+    if (p.lead) window.ppSend('lead', Object.assign({mortgageType: mtype || '', lender: L ? L.name : ''}, p.lead, answersRef.current));
     if (p.progress !== null) setProgress(p.progress);
     setOptions(p.options);
     setHist(baseHist.concat([{role: 'assistant', content: reply}]));
@@ -302,6 +329,7 @@ function App() {
   function send(textIn) {
     var txt = (textIn !== undefined ? textIn : input).trim();
     if (!txt || busy) return;
+    if (fieldRef.current && fieldRef.current !== 'other') answersRef.current[fieldRef.current] = txt;
     setInput(''); setOptions([]);
     var newMsgs = msgs.concat([{role: 'user', content: txt}]);
     var newHist = hist.concat([{role: 'user', content: txt}]);
@@ -414,13 +442,7 @@ function App() {
   // ── DONE ──────────────────────────────────────────────
   if (stage === 'done' && result) {
     var remo = (result.path || '').toLowerCase().indexOf('remortgage') !== -1;
-    var rows = [['Name', [result.firstName, result.lastName].join(' ').trim()], ['Phone', result.phone], ['Email', result.email],
-      ['Address', [result.address, result.postcode].filter(Boolean).join(', ')], ['Lender', result.lender], ['Mortgage', result.mortgageType === 'buy-to-let' ? 'Buy to let' : (result.mortgageType === 'residential' ? 'Residential' : result.mortgageType)],
-      ['Deal ends', result.dealExpiry], ['Balance', result.balance], ['Property value', result.propertyValue], ['Account number', result.accountNumber],
-      ['Route', result.path === 'PT_ONLY' ? 'Switch with current lender' : (remo ? 'Full market review requested' : result.path)],
-      ['Joint with', result.jointName], ['Planned changes', result.plannedChanges], ['Preference', result.productType], ['Deal length', result.dealTerm], ['Add fee to loan', result.addFeeToLoan],
-      ['Monthly budget', result.maxPayment], ['Monthly rent', result.rentalIncome], ['Let property', result.btlAddress]
-    ].filter(function (r) { return r[1] && String(r[1]).trim(); });
+    var rows = window.ppSummaryRows(result);
     return (
       <Card>
         <div style={{background: N, padding: '28px 24px', textAlign: 'center'}}>
