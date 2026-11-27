@@ -229,7 +229,7 @@ function App() {
       body: JSON.stringify({model: window.PP_MODEL, max_tokens: 700, system: sysRef.current, messages: history})
     }).then(function (r) { return r.json(); }).then(function (d) {
       if (d.error) throw new Error(d.error.message);
-      return (d.content && d.content[0] && d.content[0].text) || '';
+      return (d.content || []).filter(function (c) { return c.type === 'text'; }).map(function (c) { return c.text; }).join('\n').trim();
     });
   }
 
