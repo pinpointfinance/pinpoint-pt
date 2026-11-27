@@ -1,0 +1,14 @@
+<!-- Pinpoint PT chat: paste into a WPBakery "Custom HTML" block on any product transfer page.
+     The chat reads this page's address and tailors itself to the lender (e.g. /nationwide-product-transfer/).
+     On the generic PT page it asks residential or buy to let, and who the lender is. -->
+<div id="pp-chat-wrap" style="max-width:660px;margin:0 auto;"></div>
+<script>
+(function(){
+  var f=document.createElement('iframe');
+  f.src='https://splendorous-boba-decfa7.netlify.app/?embed=1&page='+encodeURIComponent(location.pathname);
+  f.title='Pinpoint product transfer check';
+  f.style.cssText='width:100%;height:720px;border:0;';
+  f.setAttribute('loading','lazy');
+  document.getElementById('pp-chat-wrap').appendChild(f);
+})();
+</script>
