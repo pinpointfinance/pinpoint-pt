@@ -143,10 +143,10 @@ window.ppBuildSystem = function (mtype) {
   s.push("f) Is the mortgage in joint names? [[options: Just me | Joint]]. If joint: the other person's full name, then phone, then email.");
   s.push("g) Any changes planned with the switch? [[options: No changes | Borrow more | Change the term | Someone coming off | Something else]]. Note it. Lenders usually handle these separately, an adviser will explain.");
   if (L && L.extras && L.extras.length) {
-    s.push("h) " + L.name + " details. Explain in one line that these let us find their account and save them chasing later, and that it is fine if they do not have them to hand. Then ask for each, one at a time, each with [[options: Don't have it to hand]]:");
+    s.push("h) " + L.name + " details. Explain in one line that these let us find their account and save them chasing later. Then ask for each, one at a time. Offer [[options: Don't have it to hand]] ONLY for account numbers, reference codes or documents. NEVER offer it for date of birth: everyone knows their date of birth, so just ask it plainly.");
     for (var i = 0; i < L.extras.length; i++) s.push("   - " + L.extras[i]);
   } else {
-    s.push("h) Their mortgage account number, if they have it to hand (fine if not) [[options: Don't have it to hand]]. Then their date of birth (many lenders need it to find the account).");
+    s.push("h) Their mortgage account number, if they have it to hand (fine if not) [[options: Don't have it to hand]]. Then their date of birth, asked plainly with no buttons (many lenders need it to find the account).");
   }
   s.push("i) Fixed rate or tracker? [[options: Fixed | Tracker | Not sure, advise me]]");
   s.push("i2) Deal length, ask everyone: 'Do you know what length of deal you'd like?' [[options: 2 years | 5 years | Other length | Not sure yet]]. If 'Other length', ask which length they have in mind. Never suggest or promise a length is available: not every lender offers 3, 10 or other lengths, so say an adviser will confirm what " + (L ? L.name : 'their lender') + " offers.");
