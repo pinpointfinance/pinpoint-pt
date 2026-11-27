@@ -12,7 +12,7 @@
 //   note     : anything the chat must tell the client
 window.PP_LENDERS = {
   'nationwide-product-transfer': {name:'Nationwide', lends:'resi', pt:'rate switch', window:'about 4 months before your deal ends (new rates always start on the 1st of a month)', extras:['your Nationwide mortgage account number','your date of birth'], btlGoTo:'tmw-rate-switch', colour:'#E4022D'},
-  'tmw-rate-switch': {name:'The Mortgage Works', lends:'btl', pt:'rate switch', window:'13 weeks before your deal ends', extras:['the first 8 digits of your mortgage account number','your date of birth','the sort code your Direct Debit is paid from'], resiGoTo:'nationwide-product-transfer', colour:'#00A3AD'},
+  'tmw-rate-switch': {name:'The Mortgage Works', lends:'btl', pt:'rate switch', window:'13 weeks before your deal ends', extras:['the first 8 digits of your mortgage account number','your date of birth','the sort code your Direct Debit is paid from'], resiGoTo:'nationwide-product-transfer', colour:'#F37E21'},
   'virgin-money-product-transfer': {name:'Virgin Money', lends:'both', pt:'product transfer', window:'4 months before your deal ends', extras:['your Virgin Money mortgage account number (it looks like 11111A-11111)'], colour:'#CC0000', note:'If there are more than 2 borrowers, or the mortgage is shared ownership or Help to Buy, Virgin Money handles the switch by phone.'},
   'clydesdale-product-transfer': {name:'Clydesdale Bank', lends:'both', pt:'product transfer', window:'about 4 months before your deal ends', extras:['your Clydesdale mortgage account number']},
   'halifax-product-transfer': {name:'Halifax', lends:'resi', pt:'product transfer', window:'4 months before your deal ends', extras:['your Halifax mortgage account number (it starts 10/)'], btlGoTo:'bm-solutions-product-transfer', colour:'#005EB8'},
@@ -46,7 +46,7 @@ window.PP_LENDERS = {
   'pepper-product-transfer': {name:'Pepper Money', lends:'resi', pt:'product transfer', window:'3 months before your deal ends', extras:['your Pepper Money mortgage account number']},
   'bluestone-product-transfer': {name:'Bluestone Mortgages', lends:'resi', pt:'product transfer', window:'ahead of your deal ending', extras:['your Bluestone mortgage account number']},
   'vida-product-transfer': {name:'Vida Homeloans', lends:'both', pt:'product switch', window:'6 months before your deal ends', extras:['your Vida mortgage account number']},
-  'tml-product-transfer': {name:'The Mortgage Lender', lends:'both', pt:'product transfer', window:'ahead of your deal ending', extras:['your TML mortgage account number']},
+  'tml-product-transfer': {name:'The Mortgage Lender', lends:'both', pt:'product transfer', window:'ahead of your deal ending', extras:['your TML mortgage account number'], colour:'#00ADA9'},
   'bank-of-ireland-product-transfer': {name:'Bank of Ireland', lends:'both', pt:'product transfer', window:'6 months before your deal ends', extras:['your Bank of Ireland mortgage account number']},
   'co-op-product-transfer': {name:'Co-operative Bank (Platform)', lends:'both', pt:'product switch', window:'ahead of your deal ending', extras:['your Co-op or Platform mortgage account number']},
   'metro-bank-rate-switch': {name:'Metro Bank', lends:'both', pt:'rate switch', window:'3 months before your deal ends', extras:['your Metro Bank mortgage account number (8 digits starting with 4)']},

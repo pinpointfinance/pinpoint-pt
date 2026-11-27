@@ -110,7 +110,7 @@ window.ppBuildSystem = function (mtype) {
   }
   s.push("");
   s.push("QUICK REPLIES: when the answer is a choice, end your message with one line: [[options: A | B | C]] (max 8 short options). The page shows them as buttons. The client can still type.");
-  s.push("FIELD: every message that asks the client a question must also end with [[field: KEY]] naming what the question collects. KEY is one of: firstName, lastName, phone, email, address, dealExpiry, mortgageType, lender, balance, propertyValue, path, jointNames, jointName, jointPhone, jointEmail, plannedChanges, accountNumber, dateOfBirth, lenderDetail, productType, dealTerm, addFeeToLoan, maxPayment, rentalIncome, propertyType, btlAddress, ownership, income, commitments, term, other. Use the same KEY when you re-ask.");
+  s.push("FIELD: every message that asks the client a question must also end with [[field: KEY]] naming what the question collects. KEY is one of: firstName, lastName, phone, email, address, dealExpiry, mortgageType, lender, balance, propertyValue, path, jointNames, jointName, jointPhone, jointEmail, plannedChanges, accountNumber, dateOfBirth, lenderDetail, productType, dealTerm, addFeeToLoan, maxPayment, rentalIncome, propertyType, btlAddress, ownership, companyName, income, commitments, term, other. Use the same KEY when you re-ask.");
   s.push("PROGRESS: end EVERY message with [[progress: N]] where N is 0 to 100, your estimate of how far through the fact find we are.");
   s.push("");
   s.push("STAGE 1, in this exact order, one question at a time:");
@@ -154,7 +154,7 @@ window.ppBuildSystem = function (mtype) {
   s.push("i3) Product fee, ask everyone: 'If your new deal has a product fee, would you like to add it to the mortgage?' [[options: Yes, add it | No, pay it upfront | Not sure]]");
   s.push("    If they say yes, add it: before moving on, say clearly in one sentence that interest is charged on a fee added to the mortgage, so it can cost more over the life of the mortgage than paying it upfront, and an adviser will go through the figures with them.");
   s.push("j) Do NOT ask about a monthly budget on the PT_ONLY route: a product transfer is priced by the lender, not by the client.");
-  s.push("j) BUY TO LET ONLY, in order: if rent is over £2,000 a month, single let or HMO [[options: Single let | HMO]]; full address of the let property; held personally or in a limited company [[options: Personally | Limited company]].");
+  s.push("j) BUY TO LET ONLY, in order: if rent is over £2,000 a month, single let or HMO [[options: Single let | HMO]]; the rental property's house number or name and postcode only, asked plainly as the rental property so they do not give their home address, for example "What's the house number or name and postcode of the rental property?" [[field: btlAddress]]; held personally or in a limited company [[options: Personally | Limited company]]; if limited company, the company name [[field: companyName]].");
   s.push("k) REMORTGAGE path and RESIDENTIAL only: ask 'Do you have a monthly budget in mind? If so, what is it?' [[options: No budget in mind]], then total household income (ballpark fine), then any credit cards, loans or car finance (yes or no is fine), then years left on the mortgage.");
   s.push("k) REMORTGAGE path and BUY TO LET: years left on the mortgage.");
   s.push("");
@@ -164,7 +164,7 @@ window.ppBuildSystem = function (mtype) {
   s.push("Answer any question briefly (no advice or rates). When they say they have no more questions, say a warm goodbye with their first name, and end that SAME goodbye message with one final line: [[complete: {JSON}]] using the JSON below, filled in. Never wait for another message before sending it.");
   s.push("In the JSON set dealInWindow to 'yes' if the switch can be booked now, 'not yet' if the deal ends beyond the booking window.");
   s.push("JSON for the [[complete: ...]] line (one line, valid JSON, no line breaks):");
-  s.push('{"complete":true,"data":{"firstName":"","lastName":"","phone":"","email":"","address":"","postcode":"","dealExpiry":"","mortgageType":"","lender":"","accountNumber":"","dateOfBirth":"","otherLenderDetails":"","balance":"","propertyValue":"","path":"","jointNames":"","jointName":"","jointPhone":"","jointEmail":"","plannedChanges":"","productType":"","dealTerm":"","addFeeToLoan":"","maxPayment":"","rentalIncome":"","dealInWindow":"","propertyType":"","btlAddress":"","ownership":"","income":"","commitments":"","term":"","stoppedEarly":""}}');
+  s.push('{"complete":true,"data":{"firstName":"","lastName":"","phone":"","email":"","address":"","postcode":"","dealExpiry":"","mortgageType":"","lender":"","accountNumber":"","dateOfBirth":"","otherLenderDetails":"","balance":"","propertyValue":"","path":"","jointNames":"","jointName":"","jointPhone":"","jointEmail":"","plannedChanges":"","productType":"","dealTerm":"","addFeeToLoan":"","maxPayment":"","rentalIncome":"","dealInWindow":"","propertyType":"","btlAddress":"","ownership":"","companyName":"","income":"","commitments":"","term":"","stoppedEarly":""}}');
   return s.join('\n');
 };
 
@@ -173,7 +173,7 @@ window.PP_FIELDS = [['lender','Lender'],['mortgageType','Mortgage'],['dealExpiry
   ['jointNames','Joint names'],['jointName','Joint with'],['jointPhone','Joint phone'],['jointEmail','Joint email'],['plannedChanges','Planned changes'],
   ['accountNumber','Account number'],['dateOfBirth','Date of birth'],['lenderDetail','Other lender details'],['path','Route'],['productType','Fixed or tracker'],
   ['dealTerm','Deal length'],['addFeeToLoan','Add fee to loan'],['maxPayment','Monthly budget'],['rentalIncome','Monthly rent'],['propertyType','Single let or HMO'],
-  ['btlAddress','Let property address'],['ownership','Held personally or Ltd'],['income','Household income'],['commitments','Credit commitments'],['term','Years left on mortgage']];
+  ['btlAddress','Let property address'],['ownership','Held personally or Ltd'],['companyName','Company name'],['income','Household income'],['commitments','Credit commitments'],['term','Years left on mortgage']];
 window.ppSummaryRows = function (d) {
   d = d || {};
   var money = function (v) { var n = String(v).replace(/[£,\s]/g, ''); return /^\d+(\.\d+)?$/.test(n) ? '£' + Number(n).toLocaleString('en-GB') : v; };
@@ -376,7 +376,7 @@ function App() {
           </div>
           <label style={{display: 'flex', alignItems: 'flex-start', gap: 11, cursor: 'pointer', marginBottom: 18, fontSize: 13, color: M, lineHeight: 1.6}}>
             <input type="checkbox" checked={consent} onChange={function () { setConsent(!consent); }} style={{width: 20, height: 20, marginTop: 1, accentColor: N, flexShrink: 0}} />
-            <span>I agree to Pinpoint Finance using my details to look at my mortgage options and contact me about them.</span>
+            <span>I agree to Pinpoint Finance using my details to look at my mortgage options and contact me about them, as set out in our <a href="https://pinpoint.finance/privacy-policy/" target="_blank" rel="noopener" style={{color: N, textDecoration: 'underline'}}>privacy policy</a>.</span>
           </label>
           <button disabled={!canStart} onClick={startChat} style={{width: '100%', padding: 15, borderRadius: 12, border: 'none', background: canStart ? T : '#e2e8f0', color: canStart ? N : '#999', fontSize: 15, fontWeight: 900, cursor: canStart ? 'pointer' : 'default', fontFamily: 'Lato,sans-serif'}}>
             {canStart ? 'Start my free check →' : (needsType && !mtype ? 'Choose home or let property above' : 'Tick the box above to start')}
