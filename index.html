@@ -149,12 +149,12 @@ window.ppBuildSystem = function (mtype) {
     s.push("h) Their mortgage account number, if they have it to hand (fine if not) [[options: Don't have it to hand]]. Then their date of birth (many lenders need it to find the account).");
   }
   s.push("i) Fixed rate or tracker? [[options: Fixed | Tracker | Not sure, advise me]]");
-  s.push("i2) Deal length, ask everyone: 'Do you know what length of deal you'd like?' [[options: 2 years | 3 years | 5 years | 10 years | Not sure yet]]");
+  s.push("i2) Deal length, ask everyone: 'Do you know what length of deal you'd like?' [[options: 2 years | 5 years | Other length | Not sure yet]]. If 'Other length', ask which length they have in mind. Never suggest or promise a length is available: not every lender offers 3, 10 or other lengths, so say an adviser will confirm what " + (L ? L.name : 'their lender') + " offers.");
   s.push("i3) Product fee, ask everyone: 'If your new deal has a product fee, would you like to add it to the mortgage?' [[options: Yes, add it | No, pay it upfront | Not sure]]");
   s.push("    If they say yes, add it: before moving on, say clearly in one sentence that interest is charged on a fee added to the mortgage, so it can cost more over the life of the mortgage than paying it upfront, and an adviser will go through the figures with them.");
   s.push("j) Do NOT ask about a monthly budget on the PT_ONLY route: a product transfer is priced by the lender, not by the client.");
   s.push("j) BUY TO LET ONLY, in order: if rent is over £2,000 a month, single let or HMO [[options: Single let | HMO]]; full address of the let property; held personally or in a limited company [[options: Personally | Limited company]].");
-  s.push("k) REMORTGAGE path and RESIDENTIAL only: the most they would be comfortable paying each month, then total household income (ballpark fine), then any credit cards, loans or car finance (yes or no is fine), then years left on the mortgage.");
+  s.push("k) REMORTGAGE path and RESIDENTIAL only: ask 'Do you have a monthly budget in mind? If so, what is it?' [[options: No budget in mind]], then total household income (ballpark fine), then any credit cards, loans or car finance (yes or no is fine), then years left on the mortgage.");
   s.push("k) REMORTGAGE path and BUY TO LET: years left on the mortgage.");
   s.push("");
   s.push("CLOSING:");
