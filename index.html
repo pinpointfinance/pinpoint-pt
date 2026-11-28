@@ -70,7 +70,12 @@ window.PP_CTX = (function () {
   if (!type && lender && lender.lends === 'btl') type = 'buy-to-let';
   if (!type && lender && lender.lends === 'resi') type = 'residential';
   var embedded = q.get('embed') === '1' || window.self !== window.top;
-  return { slug: slug, lender: lender, type: type, embedded: embedded };
+  // Page the chat sits on, for the lead's page URL: ?page=, else the parent page, else the default PT page.
+  var pagePath = '';
+  var pp = (q.get('page') || '').toLowerCase().split('?')[0].split('#')[0].replace(/[^a-z0-9\/-]/g, '').replace(/^\/+|\/+$/g, '');
+  if (pp) pagePath = '/' + pp + '/';
+  else if (document.referrer) { try { var ru = new URL(document.referrer); if (/pinpoint\.finance$/.test(ru.hostname) && ru.pathname.length > 1) pagePath = ru.pathname; } catch (e) {} }
+  return { slug: slug, lender: lender, type: type, embedded: embedded, pagePath: pagePath };
 })();
 document.body.className = window.PP_CTX.embedded ? 'embedded' : 'standalone';
 
@@ -202,7 +207,7 @@ window.ppSend = function (event, data) {
     mobileNumber: d.phone || '',
     service: 'Product transfer' + (d.mortgageType ? ' - ' + d.mortgageType : ''),
     YourMessage: event === 'lead' ? 'Started the product transfer chat and left contact details at the checkpoint. Full answers follow if they finish.' : 'Completed the product transfer chat. Answers are in the details below.',
-    _url: 'https://pinpoint.finance' + (ctx.slug ? '/' + ctx.slug + '/' : '/residential-mortgages/free-product-transfer-service/'),
+    _url: 'https://pinpoint.finance' + (ctx.slug ? '/' + ctx.slug + '/' : (ctx.pagePath || '/residential-mortgages/free-product-transfer-service/')),
     _post_title: label + (event === 'lead' ? ', contact details' : ', completed')
   };
   f.lender = lender;
