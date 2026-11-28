@@ -165,7 +165,8 @@ window.ppBuildSystem = function (mtype) {
   s.push("");
   s.push("CLOSING:");
   s.push("PT_ONLY: 'Brilliant. Because you're staying with " + (L ? L.name : 'your lender') + ", there's no broker fee from Pinpoint, no valuation fee and no solicitors. An adviser will be in touch within one working day with your options. Anything you'd like to ask before I wrap up?'");
-  s.push("REMORTGAGE: 'Perfect. An adviser will look at your " + (L ? L.name : 'current lender') + " options and run a full market review across our panel of over 60 lenders. That is our residential mortgage service, which has a £495 fee, and they'll explain it before you decide. They'll be in touch within one working day. Anything you'd like to ask before I wrap up?'");
+  s.push("REMORTGAGE: 'Perfect. An adviser will look at your " + (L ? L.name : 'current lender') + " options and run a full market review across our panel of over 60 lenders. That is a separate service, and our standard fees apply. They'll explain them in writing before you decide. They'll be in touch within one working day. Anything you'd like to ask before I wrap up?'");
+  if (L && L.closeNote) s.push("IMPORTANT for " + L.name + ": in the closing message, before 'Anything you'd like to ask', add this sentence on its own line, word for word, wrapped in double asterisks so it shows in bold: **" + L.closeNote + "** Repeat the same bold line in the goodbye message.");
   s.push("Answer any question briefly (no advice or rates). When they say they have no more questions, say a warm goodbye with their first name, and end that SAME goodbye message with one final line: [[complete: {JSON}]] using the JSON below, filled in. Never wait for another message before sending it.");
   s.push("In the JSON set dealInWindow to 'yes' if the switch can be booked now, 'not yet' if the deal ends beyond the booking window.");
   s.push("JSON for the [[complete: ...]] line (one line, valid JSON, no line breaks):");
@@ -410,7 +411,7 @@ function App() {
             return (
               <div key={i} style={{display: 'flex', justifyContent: u ? 'flex-end' : 'flex-start', alignItems: 'flex-end', gap: 8, animation: 'fadeIn .2s ease'}}>
                 {!u && <Logo sz={26} />}
-                <div style={{maxWidth: '82%', padding: '11px 14px', borderRadius: u ? '16px 16px 4px 16px' : '16px 16px 16px 4px', background: u ? N : C, color: u ? '#fff' : N, fontSize: 14, lineHeight: 1.65, whiteSpace: 'pre-wrap', wordBreak: 'break-word'}}>{m.content}</div>
+                <div style={{maxWidth: '82%', padding: '11px 14px', borderRadius: u ? '16px 16px 4px 16px' : '16px 16px 16px 4px', background: u ? N : C, color: u ? '#fff' : N, fontSize: 14, lineHeight: 1.65, whiteSpace: 'pre-wrap', wordBreak: 'break-word'}}>{String(m.content).split(/\*\*([\s\S]+?)\*\*/).map(function (part, k) { return k % 2 ? <strong key={k}>{part}</strong> : part; })}</div>
               </div>
             );
           })}
@@ -454,10 +455,11 @@ function App() {
           <div style={{width: 56, height: 56, borderRadius: '50%', background: 'rgba(26,178,177,.2)', border: '2px solid ' + T, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px', fontSize: 24, color: T}}>&#10003;</div>
           <div style={{fontSize: 22, fontWeight: 900, color: '#fff', marginBottom: 8}}>Thanks{result.firstName ? ', ' + result.firstName : ''}</div>
           <div style={{fontSize: 13, color: 'rgba(255,255,255,.75)', lineHeight: 1.7}}>
-            {remo ? 'An adviser will be in touch within one working day about your full market review, including the £495 fee, before you decide.' : 'We\'ll get your ' + (L ? L.name + ' ' + L.pt : 'switch') + ' options ready and be in touch within one working day.'}
+            {remo ? 'An adviser will be in touch within one working day about your full market review, and will explain our fees in writing before you decide.' : 'We\'ll get your ' + (L ? L.name + ' ' + L.pt : 'switch') + ' options ready and be in touch within one working day.'}
           </div>
         </div>
         <div style={{padding: '18px 24px 22px'}}>
+          {L && L.closeNote && <div style={{background: '#fff4e5', border: '2px solid #f37e21', borderRadius: 12, padding: '12px 14px', marginBottom: 16, fontSize: 14, lineHeight: 1.6, color: N, fontWeight: 800}}>{L.closeNote}</div>}
           <div style={{fontSize: 10, fontWeight: 700, color: T, textTransform: 'uppercase', letterSpacing: '2px', marginBottom: 10}}>What you told us</div>
           {rows.map(function (r) {
             return <div key={r[0]} style={{display: 'flex', justifyContent: 'space-between', gap: 12, padding: '7px 0', borderBottom: '1px solid #f0ede6', fontSize: 13}}><span style={{color: M}}>{r[0]}</span><span style={{color: N, fontWeight: 700, textAlign: 'right', wordBreak: 'break-word'}}>{r[1]}</span></div>;
